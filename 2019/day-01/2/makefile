@@ -1,9 +1,10 @@
 GXX:= g++
 GXXFLAGS:= -pedantic -Wall -Wextra -O0 -ggdb -std=c++17
 OBJECTS:= main.o
-TARGET:= main
+TARGET:= main.bin
+INPUT:= input
 
-.PHONY: all clean
+.PHONY: all clean run
 
 all: $(TARGET)
 
@@ -15,3 +16,6 @@ $(TARGET): $(OBJECTS)
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)
+
+run: $(TARGET)
+	cat $(INPUT) | ./$(TARGET)
