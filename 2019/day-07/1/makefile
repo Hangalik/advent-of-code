@@ -1,5 +1,5 @@
 GXX:= g++
-GXXFLAGS:= -pedantic -Wall -Wextra -O0 -ggdb -std=c++17
+GXXFLAGS:= -pedantic -Wall -Wextra -O0 -ggdb -std=c++17 -I../../intCode
 OBJECTS:= main.o
 TARGET:= main.bin
 INPUT:= input
