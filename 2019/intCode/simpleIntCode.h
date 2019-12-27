@@ -3,9 +3,9 @@
 
 constexpr int BUFFER_SIZE = 16;
 
-class IntCode {
+class SimpleIntCode {
 public:
-	explicit IntCode(std::istream& intCodeSource) {
+	explicit SimpleIntCode(std::istream& intCodeSource) {
 		char buffer[BUFFER_SIZE];
 		while (intCodeSource.getline(buffer, BUFFER_SIZE, ',')) {
 			int next{ std::stoi(buffer) };
