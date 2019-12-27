@@ -1,10 +1,10 @@
 #include <iostream>
 #include <algorithm>
-#include "intCode.h"
+#include "simpleIntCode.h"
 
 int main() {
 
-	const IntCode ic{ std::cin };
+	const SimpleIntCode ic{ std::cin };
 
 	std::vector<int> phaseCodes{ 0, 1, 2, 3, 4 };
 	int maxAmplification{ 0 };
@@ -13,7 +13,7 @@ int main() {
 		for (int phaseCode : phaseCodes) {
 			std::vector<int> input{ phaseCode, resultOfPrevious };
 			std::vector<int> output;
-			IntCode amp{ ic };
+			SimpleIntCode amp{ ic };
 			amp.compute(input, output);
 			resultOfPrevious = output[0];
 		}
