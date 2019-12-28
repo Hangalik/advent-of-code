@@ -4,6 +4,7 @@
 
 int main() {
 
+	using value_type = typename SimpleIntCode::value_type;
 	const SimpleIntCode ic{ std::cin };
 
 	std::vector<int> phaseCodes{ 0, 1, 2, 3, 4 };
@@ -11,8 +12,8 @@ int main() {
 	do {
 		int resultOfPrevious{ 0 };
 		for (int phaseCode : phaseCodes) {
-			std::vector<int> input{ phaseCode, resultOfPrevious };
-			std::vector<int> output;
+			std::vector<value_type> input{ phaseCode, resultOfPrevious };
+			std::vector<value_type> output;
 			SimpleIntCode amp{ ic };
 			amp.compute(input, output);
 			resultOfPrevious = output[0];

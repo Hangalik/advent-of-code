@@ -1,62 +1,65 @@
 #include <istream>
+#include <deque>
 #include <vector>
 
-constexpr int BUFFER_SIZE = 16;
+constexpr int BUFFER_SIZE = 32;
 
 class SimpleIntCode {
 public:
-	explicit SimpleIntCode(std::istream& intCodeSource) {
+	using value_type = long long;
+
+	explicit SimpleIntCode(std::istream& intCodeSource) : relativeBase{ 0 } {
 		char buffer[BUFFER_SIZE];
 		while (intCodeSource.getline(buffer, BUFFER_SIZE, ',')) {
-			int next{ std::stoi(buffer) };
-			intCode.emplace_back(next);
+			value_type next{ std::stoll(buffer) };
+			intCode.push_back(next);
 		}
 	}
 
-	void compute(const std::vector<int>& input, std::vector<int>& output) {
+	void compute(const std::vector<value_type>& input, std::vector<value_type>& output) {
 		int i{ 0 };
 		auto inputIterator{ input.cbegin() };
 		while (true) {
-			switch (intCode.at(i) % 100) {
+			switch (intCodeAt(i) % 100) {
 			case 1:
 			{
-				const int lhs = getParameter(intCode[i], 1, intCode.at(i + 1), intCode);
-				const int rhs = getParameter(intCode[i], 2, intCode.at(i + 2), intCode);
-				const int resultPos = intCode.at(i + 3);
-				intCode.at(resultPos) = lhs + rhs;
+				const value_type lhs = getParameterPosition(i, 1);
+				const value_type rhs = getParameterPosition(i, 2);
+				const value_type resultPos = getParameterPosition(i, 3);
+				intCodeAt(resultPos) = intCodeAt(lhs) + intCodeAt(rhs);
 				i += 4;
 				break;
 			}
 			case 2:
 			{
-				const int lhs = getParameter(intCode[i], 1, intCode.at(i + 1), intCode);
-				const int rhs = getParameter(intCode[i], 2, intCode.at(i + 2), intCode);
-				const int resultPos = intCode.at(i + 3);
-				intCode.at(resultPos) = lhs * rhs;
+				const value_type lhs = getParameterPosition(i, 1);
+				const value_type rhs = getParameterPosition(i, 2);
+				const value_type resultPos = getParameterPosition(i, 3);
+				intCodeAt(resultPos) = intCodeAt(lhs) * intCodeAt(rhs);
 				i += 4;
 				break;
 			}
 			case 3:
 			{
-				const int resultPos = intCode.at(i + 1);
-				intCode.at(resultPos) = *inputIterator;
+				const value_type resultPos = getParameterPosition(i, 1);
+				intCodeAt(resultPos) = *inputIterator;
 				inputIterator++;
 				i += 2;
 				break;
 			}
 			case 4:
 			{
-				const int pos = getParameter(intCode[i], 1, intCode.at(i + 1), intCode);
-				output.push_back(pos);
+				const value_type pos = getParameterPosition(i, 1);
+				output.push_back(intCodeAt(pos));
 				i += 2;
 				break;
 			}
 			case 5:
 			{
-				const int lhs = getParameter(intCode[i], 1, intCode.at(i + 1), intCode);
-				const int rhs = getParameter(intCode[i], 2, intCode.at(i + 2), intCode);
-				if (lhs != 0) {
-					i = rhs;
+				const value_type lhs = getParameterPosition(i, 1);
+				const value_type rhs = getParameterPosition(i, 2);
+				if (intCodeAt(lhs) != 0) {
+					i = intCodeAt(rhs);
 				} else {
 					i += 3;
 				}
@@ -64,10 +67,10 @@ public:
 			}
 			case 6:
 			{
-				const int lhs = getParameter(intCode[i], 1, intCode.at(i + 1), intCode);
-				const int rhs = getParameter(intCode[i], 2, intCode.at(i + 2), intCode);
-				if (lhs == 0) {
-					i = rhs;
+				const value_type lhs = getParameterPosition(i, 1);
+				const value_type rhs = getParameterPosition(i, 2);
+				if (intCodeAt(lhs) == 0) {
+					i = intCodeAt(rhs);
 				} else {
 					i += 3;
 				}
@@ -75,28 +78,35 @@ public:
 			}
 			case 7:
 			{
-				const int lhs = getParameter(intCode[i], 1, intCode.at(i + 1), intCode);
-				const int rhs = getParameter(intCode[i], 2, intCode.at(i + 2), intCode);
-				const int resultPos = intCode.at(i + 3);
-				if (lhs < rhs) {
-					intCode.at(resultPos) = 1;
+				const value_type lhs = getParameterPosition(i, 1);
+				const value_type rhs = getParameterPosition(i, 2);
+				const value_type resultPos = getParameterPosition(i, 3);
+				if (intCodeAt(lhs) < intCodeAt(rhs)) {
+					intCodeAt(resultPos) = 1;
 				} else {
-					intCode.at(resultPos) = 0;
+					intCodeAt(resultPos) = 0;
 				}
 				i += 4;
 				break;
 			}
 			case 8:
 			{
-				const int lhs = getParameter(intCode[i], 1, intCode.at(i + 1), intCode);
-				const int rhs = getParameter(intCode[i], 2, intCode.at(i + 2), intCode);
-				const int resultPos = intCode.at(i + 3);
-				if (lhs == rhs) {
-					intCode.at(resultPos) = 1;
+				const value_type lhs = getParameterPosition(i, 1);
+				const value_type rhs = getParameterPosition(i, 2);
+				const value_type resultPos = getParameterPosition(i, 3);
+				if (intCodeAt(lhs) == intCodeAt(rhs)) {
+					intCodeAt(resultPos) = 1;
 				} else {
-					intCode.at(resultPos) = 0;
+					intCodeAt(resultPos) = 0;
 				}
 				i += 4;
+				break;
+			}
+			case 9:
+			{
+				const value_type lhs = getParameterPosition(i, 1);
+				relativeBase += intCodeAt(lhs);
+				i += 2;
 				break;
 			}
 			case 99:
@@ -108,7 +118,18 @@ public:
 	}
 	
 private:
-	int parameterMode(int opCode, int numberOfParameter) const {
+	value_type& intCodeAt(value_type position) {
+		if (position < 0) {
+			throw "indexing with negative index";
+		}
+		auto pos = static_cast<typename std::deque<value_type>::size_type>(position);
+		if (intCode.size() < pos + 1) {
+			intCode.resize(pos + 1);
+		}
+		return intCode[pos];
+	}
+
+	value_type parameterMode(value_type opCode, int numberOfParameter) const {
 		opCode /= 100;
 		for (int i = 0; i < numberOfParameter - 1; i++) {
 			opCode /= 10;
@@ -116,17 +137,21 @@ private:
 		return opCode % 10;
 	}
 
-	int getParameter(int opCode, int numberOfParameter, int parameter, const std::vector<int>& intCode) const {
-		int parameterMode = this->parameterMode(opCode, numberOfParameter);
+	value_type getParameterPosition(int opCodePosition, int numberOfParameter) {
+		value_type opCode{ intCode.at(opCodePosition) };
+		value_type parameterMode = this->parameterMode(opCode, numberOfParameter);
 		switch (parameterMode) {
 		case 0:
-			return intCode.at(parameter);
+			return intCodeAt(opCodePosition + numberOfParameter);
 		case 1:
-			return parameter;
+			return opCodePosition + numberOfParameter;
+		case 2:
+			return relativeBase + intCodeAt(opCodePosition + numberOfParameter);
 		default:
 			throw "Unknown parameter mode: " + parameterMode;
 		}
 	}
 
-	std::vector<int> intCode;
+	std::deque<value_type> intCode;
+	value_type relativeBase;
 };
