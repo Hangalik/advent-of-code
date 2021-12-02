@@ -2,6 +2,7 @@
 #define INPUT_SELECTOR_H_
 
 #include <functional>
+#include <istream>
 
 using TestFunction = std::function<int(std::istream&)>;
 
