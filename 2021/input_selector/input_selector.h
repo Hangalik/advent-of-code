@@ -3,6 +3,8 @@
 
 #include <functional>
 
-int runWithProperInput(int argc, const char* argv[], std::function<int(std::istream&)>);
+using TestFunction = std::function<int(std::istream&)>;
+
+int runWithProperInput(int argc, const char* argv[], TestFunction func1, TestFunction func2);
 
 #endif

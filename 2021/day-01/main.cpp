@@ -1,10 +1,25 @@
 #include <deque>
-#include <istream>
 #include <iostream>
 #include <numeric>
 #include <optional>
 
 #include "input_selector.h"
+
+int f1(std::istream& in) {
+	int previous, current;
+	int increaseCount = 0;
+	in >> previous;
+	while (in >> current) {
+		if (previous < current) {
+			increaseCount++;
+		}
+		previous = current;
+	}
+
+	std::cout << "Increase count: " << increaseCount << std::endl;
+
+	return 0;
+}
 
 class Summer {
 public:
@@ -27,7 +42,7 @@ private:
 	std::deque<int> elements;
 };
 
-int f(std::istream& in) {
+int f2(std::istream& in) {
 	Summer summer;
 	bool first = true;
 	int increaseCount = 0;
@@ -44,14 +59,14 @@ int f(std::istream& in) {
 		first = false;
 		previous = sum;
 	}
-	
+
 	std::cout << "Increase count: " << increaseCount << std::endl;
-	
+
 	return 0;
 }
 
 int main(int argc, const char* argv[]) {
 
-	return runWithProperInput(argc, argv, f);
-	
+	return runWithProperInput(argc, argv, f1, f2);
+
 }
