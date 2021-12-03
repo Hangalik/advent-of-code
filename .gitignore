@@ -2,3 +2,4 @@
 *.o
 *.bin
 /2021/build/
+**/CMakeUserPresets.json
