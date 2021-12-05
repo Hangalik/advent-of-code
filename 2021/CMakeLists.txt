@@ -19,3 +19,4 @@ add_subdirectory(input_selector)
 
 add_subdirectory(day-01)
 add_subdirectory(day-02)
+add_subdirectory(day-03)
