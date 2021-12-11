@@ -3,7 +3,7 @@
 #include <vector>
 #include <set>
 #include <unordered_set>
-#include <list>
+#include <deque>
 
 #include "input_selector.h"
 
@@ -102,32 +102,26 @@ int basinSize(const FloorLevel& floorLevel) {
 
 int f2(std::istream& in) {
 	// Needs to be a container that doesn't copy around :P
-	std::list<std::list<FloorLevel>> floorLevels;
+	std::deque<std::deque<FloorLevel>> floorLevels;
 	std::string line;
 	while (in >> line) {
-		std::list<FloorLevel> lineLevels;
+		std::deque<FloorLevel> lineLevels;
 		for (size_t i = 0; i < line.size(); i++) {
 			int point = std::stoi(line.substr(i, 1));
 			lineLevels.emplace_back(point);
 
 			if (i > 0u) {
-				auto lastIt = lineLevels.rbegin();
-				FloorLevel& last = *lastIt;
-				lastIt++;
-				FloorLevel& beforeLast = *lastIt;
-				linkNeighbours(last, beforeLast);
+				linkNeighbours(lineLevels[i], lineLevels[i - 1]);
 			}
 			if (!floorLevels.empty()) {
-				auto lastFloor = floorLevels.back().begin();
-				std::advance(lastFloor, i);
-				linkNeighbours(lineLevels.back(), *lastFloor);
+				linkNeighbours(lineLevels[i], floorLevels.back()[i]);
 			}
 		}
 		floorLevels.push_back(std::move(lineLevels));
 	}
 
 	std::multiset<int, std::less<int>> basinSizes;
-	for (const std::list<FloorLevel>& floors : floorLevels) {
+	for (const std::deque<FloorLevel>& floors : floorLevels) {
 		for (const FloorLevel& level : floors) {
 			if (level.isLowPoint()) {
 				int sizeOfBasin = basinSize(level);
