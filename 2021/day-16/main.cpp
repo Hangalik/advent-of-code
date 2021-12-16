@@ -1,6 +1,9 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <functional>
+#include <numeric>
+#include <algorithm>
 
 #include "input_selector.h"
 
@@ -79,7 +82,14 @@ private:
 	size_t bitPosition;
 };
 
+static constexpr int SUM_TYPE = 0;
+static constexpr int PRODUCT_TYPE = 1;
+static constexpr int MINIMUM_TYPE = 2;
+static constexpr int MAXIMUM_TYPE = 3;
 static constexpr int LITERAL_TYPE = 4;
+static constexpr int GREATER_TYPE = 5;
+static constexpr int LESSER_TYPE = 6;
+static constexpr int EQUAL_TYPE = 7;
 
 struct Packet {
 	int version;
@@ -87,32 +97,169 @@ struct Packet {
 	int value;
 };
 
+int getSumOfVersions(BitParser& bp) {
+	int version = bp.getInt(3);
+	int typeId = bp.getInt(3);
+	if (typeId == LITERAL_TYPE) {
+		int value = 0;
+		bool hasMore = true;
+		while (hasMore) {
+			hasMore = bp.getInt(1) == 1;
+			value *= 16;
+			value += bp.getInt(4);
+		}
+		return version;
+	} else {
+		int lengthType = bp.getInt(1);
+		int versionSum = version;
+		if (lengthType == 1) {
+			int subPacketCount = bp.getInt(11);
+			for (int i = 0; i < subPacketCount; i++) {
+				versionSum += getSumOfVersions(bp);
+			}
+		} else {
+			int bitsOfSubPackets = bp.getInt(15);
+			size_t goalRemaining = bp.remaining() - bitsOfSubPackets;
+			while (bp.remaining() > goalRemaining) {
+				versionSum += getSumOfVersions(bp);
+			}
+		}
+		return versionSum;
+	}
+}
+
 int f1(std::istream& in) {
 	std::string line;
 	in >> line;
 	BitParser bp(line);
 
-	int version = bp.getInt(3);
-	int typeId = bp.getInt(3);
-	if (typeId != LITERAL_TYPE) {
-		std::cout << "not literal type" << std::endl;
-		return 0;
-	}
-	int value = 0;
-	bool hasMore = true;
-	while (hasMore) {
-		hasMore = bp.getInt(1) == 1;
-		for (int i = 0; i < 4; i++) {
-			value *= 2;
-			value += bp.getInt(1);
-		}
-	}
-	std::cout << value << std::endl;
+	int versionSum = getSumOfVersions(bp);
+	
+	std::cout << versionSum << std::endl;
 
 	return 0;
 }
 
-int f2(std::istream& ) {
+long long packetSummer(const std::vector<long long>& values) {
+	return std::accumulate(values.begin(), values.end(), 0LL, std::plus<long long>());
+}
+
+long long packetMultiplier(const std::vector<long long>& values) {
+	return std::accumulate(values.begin(), values.end(), 1LL, std::multiplies<long long>());
+}
+
+long long packetMinner(const std::vector<long long>& values) {
+	auto minner = [](long long a, long long b) { return std::min(a, b); };
+	constexpr long long minInit = std::numeric_limits<long long>::max();
+	return std::accumulate(values.begin(), values.end(), minInit, minner);
+}
+
+long long packetMaxer(const std::vector<long long>& values) {
+	auto maxer = [](long long a, long long b) { return std::max(a, b); };
+	constexpr long long maxInit = std::numeric_limits<long long>::min();
+	return std::accumulate(values.begin(), values.end(), maxInit, maxer);
+}
+
+long long packetGreater(const std::vector<long long>& values) {
+	return values[0] > values[1];
+}
+
+long long packetLesser(const std::vector<long long>& values) {
+	return values[0] < values[1];
+}
+
+long long packetEqualer(const std::vector<long long>& values) {
+	return values[0] == values[1];
+}
+
+std::function<long long(const std::vector<long long>&)> getOperator(int typeId) {
+	switch (typeId) {
+	case SUM_TYPE:
+		return packetSummer;
+	case PRODUCT_TYPE:
+		return packetMultiplier;
+	case MINIMUM_TYPE:
+		return packetMinner;
+	case MAXIMUM_TYPE:
+		return packetMaxer;
+	case GREATER_TYPE:
+		return packetGreater;
+	case LESSER_TYPE:
+		return packetLesser;
+	case EQUAL_TYPE:
+		return packetEqualer;
+	default:
+		throw std::invalid_argument("invalid typeId: " + typeId);
+	}
+}
+
+char getOperatorChar(int typeId) {
+	switch (typeId) {
+	case SUM_TYPE:
+		return '+';
+	case PRODUCT_TYPE:
+		return '*';
+	case MINIMUM_TYPE:
+		return 'i';
+	case MAXIMUM_TYPE:
+		return 'a';
+	case GREATER_TYPE:
+		return '>';
+	case LESSER_TYPE:
+		return '<';
+	case EQUAL_TYPE:
+		return '=';
+	default:
+		throw std::invalid_argument("invalid typeId: " + typeId);
+	}
+}
+
+long long getValueOfExpression(BitParser& bp) {
+	bp.getInt(3); // version
+	int typeId = bp.getInt(3);
+	if (typeId == LITERAL_TYPE) {
+		long long value = 0;
+		bool hasMore = true;
+		while (hasMore) {
+			hasMore = bp.getInt(1) == 1;
+			value *= 16;
+			value += bp.getInt(4);
+		}
+		//std::cout << value << std::endl;
+		return value;
+	} else {
+		std::vector<long long> values;
+		int lengthType = bp.getInt(1);
+		//std::cout << getOperatorChar(typeId) << " (";
+		if (lengthType == 1) {
+			int subPacketCount = bp.getInt(11);
+			for (int i = 0; i < subPacketCount; i++) {
+				long long value = getValueOfExpression(bp);
+				values.push_back(value);
+			}
+		} else {
+			int bitsOfSubPackets = bp.getInt(15);
+			size_t goalRemaining = bp.remaining() - bitsOfSubPackets;
+			while (bp.remaining() > goalRemaining) {
+				long long value = getValueOfExpression(bp);
+				values.push_back(value);
+			}
+		}
+		auto operation = getOperator(typeId);
+		long long result = operation(values);
+		//std::cout << ") = " << result << std::endl;
+		return result;
+	}
+}
+
+int f2(std::istream& in) {
+	std::string line;
+	in >> line;
+	BitParser bp(line);
+
+	long long versionSum = getValueOfExpression(bp);
+
+	std::cout << versionSum << std::endl;
 
 	return 0;
 }
@@ -123,9 +270,8 @@ int main(int argc, const char* argv[]) {
 		return runWithProperInput(argc, argv, f1, f2);
 	} catch (std::logic_error& le) {
 		std::cerr << le.what() << std::endl;
-		return 1;
 	} catch (...) {
 		std::cerr << "Unknown exception" << std::endl;
-		return 1;
 	}
+	return 1;
 }
