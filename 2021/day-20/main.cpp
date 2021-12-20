@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <array>
-#include <span>
 
 #include "input_selector.h"
 
@@ -15,7 +14,7 @@ class Image {
 public:
 	explicit Image(ImageData imageData) : imageData(std::move(imageData)), infinite(false) {}
 
-	void enhance(std::span<bool, 512> lookupTable) {
+	void enhance(const std::array<bool, 512>& lookupTable) {
 		size_t rowCount = imageData.size();
 		size_t rowLength = imageData[0].size();
 		ImageData newData(rowCount + 2, std::vector<bool>(rowLength + 2));
@@ -94,7 +93,7 @@ private:
 		}
 	}
 
-	bool getNewInfinite(const std::span<bool, 512>& lookupTable) const {
+	bool getNewInfinite(const std::array<bool, 512>& lookupTable) const {
 		if (infinite) {
 			return lookupTable[511];
 		} else {
