@@ -3,4 +3,5 @@
 *.bin
 *.swp
 /2021/build/
+/2022/build/
 **/CMakeUserPresets.json
