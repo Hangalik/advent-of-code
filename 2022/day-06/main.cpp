@@ -1,35 +1,31 @@
 #include <iostream>
-#include <list>
-#include <unordered_set>
+#include <unordered_map>
 
 #include "input_selector.h"
 
-bool is_all_unique(const std::list<char>& chars) {
-	std::unordered_set<char> uniques;
-	for (char c : chars) {
-		if (uniques.contains(c)) {
-			return false;
+int find_unique_segment(std::istream& in, int size) {
+	int windowStart = 0;
+	int windowEnd = 0;
+	std::unordered_map<char, int> lastOccurences;
+	for (char c; in.get(c);) {
+		if (auto search = lastOccurences.find(c); search != lastOccurences.end()) {
+			int lastOcc = search->second;
+			bool windowContains = lastOcc > windowStart;
+			if (windowContains) {
+				windowStart = lastOcc;
+			}
 		}
-		uniques.insert(c);
+		windowEnd++;
+		if (windowEnd - windowStart == size) {
+			break;
+		}
+		lastOccurences.insert_or_assign(c, windowEnd);
 	}
-	return true;
+	return windowEnd;
 }
 
 int f1(std::istream& in) {
-	int n = 0;
-	std::list<char> characters;
-	for (char c; in.get(c);) {
-		characters.push_back(c);
-		n++;
-		if (characters.size() > 4) {
-			characters.pop_front();
-		}
-		if (characters.size() == 4) {
-			if (is_all_unique(characters)) {
-				break;
-			}
-		}
-	}
+	int n = find_unique_segment(in, 4);
 
 	std::cout << n << "\n";
 
@@ -37,20 +33,7 @@ int f1(std::istream& in) {
 }
 
 int f2(std::istream& in) {
-	int n = 0;
-	std::list<char> characters;
-	for (char c; in.get(c);) {
-		characters.push_back(c);
-		n++;
-		if (characters.size() > 14) {
-			characters.pop_front();
-		}
-		if (characters.size() == 14) {
-			if (is_all_unique(characters)) {
-				break;
-			}
-		}
-	}
+	int n = find_unique_segment(in, 14);
 
 	std::cout << n << "\n";
 
