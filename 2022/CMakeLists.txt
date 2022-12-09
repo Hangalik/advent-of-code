@@ -6,7 +6,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(advent-of-code-2022 LANGUAGES C CXX)
 
-set(CXX_WARNING_FLAGS -Wall -Wextra -Wdeprecated -pedantic)
+set(CXX_WARNING_FLAGS -Wall -Wextra -Wdeprecated -Wno-unused -pedantic)
 
 function(add_new_day day)
 	add_executable(${day} main.cpp)
