@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <list>
 #include <memory>
 #include <queue>
 #include <functional>
@@ -51,7 +50,7 @@ public:
 		return itemsInspected;
 	}
 
-	std::queue<long long, std::list<long long>> getItems() const {
+	std::queue<long long> getItems() const {
 		return items;
 	}
 
@@ -72,7 +71,7 @@ private:
 		}
 	}
 
-	std::queue<long long, std::list<long long>> items;
+	std::queue<long long> items;
 	long long commonDivider = std::numeric_limits<long long>::max();
 
 	std::function<long long(long long)> operation;
@@ -220,6 +219,7 @@ int f2(std::istream& in) {
 	std::nth_element(monkeys.begin(), monkeys.begin() + 1, monkeys.end(), monkeyComparator);
 
 	long long monkeyBusiness = monkeys[0]->getItemsInspected() * monkeys[1]->getItemsInspected();
+
 	std::cout << monkeyBusiness << "\n";
 
 	return 0;
