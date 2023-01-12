@@ -156,7 +156,15 @@ int mostPressureReleased(const ValveSystem& vs, const std::string& start, int ti
 static const std::string startingValve = "AA";
 static constexpr int allTime = 30;
 
+void printInts(const std::multiset<int>& ints) {
+	for (int i : ints) {
+		std::cout << i << " ";
+	}
+	std::cout << "\n";
+}
+
 int f1(std::istream& in) {
+
 	ValveSystem vs = readInValveSystem(in);
 	int res = mostPressureReleased(vs, startingValve, allTime);
 
@@ -165,7 +173,78 @@ int f1(std::istream& in) {
 	return 0;
 }
 
+struct SituationState2 {
+	std::multiset<std::string> positions;
+	std::set<std::string> openedValves;
+
+	bool operator==(const SituationState2& other) const = default;
+};
+
+struct StateHasher2 {
+	size_t operator()(const SituationState2& ss) const {
+		size_t seed = 0;
+		for (const std::string& position : ss.positions) {
+			boost::hash_combine(seed, position);
+		}
+		for (const std::string& openValve : ss.openedValves) {
+			boost::hash_combine(seed, openValve);
+		}
+		return seed;
+	}
+};
+
+void insertIfMax2(std::unordered_map<SituationState2, int, StateHasher2>& stateSpace, const SituationState2& ss, int pressureReleased) {
+	if (stateSpace[ss] < pressureReleased) {
+		stateSpace[ss] = pressureReleased;
+	}
+}
+
+int mostPressureReleased2(const ValveSystem& vs, const SituationState2& start, int time) {
+	std::unordered_map<SituationState2, int, StateHasher2> stateSpace;
+	stateSpace.try_emplace(start, 0);
+
+	for (int i = 0; i < time; i++) {
+		std::cout << i << "\n";
+		std::unordered_map<SituationState2, int, StateHasher2> newStateSpace;
+		for (const auto& [ss, releasedPressure] : stateSpace) {
+			int newReleasedPressure = releasedPressure + vs.getAllRate(ss.openedValves);
+			for (const std::string& position : ss.positions) {
+				std::multiset<std::string> positions = ss.positions;
+				positions.extract(position);
+				if (!ss.openedValves.contains(position) && vs.getRate(position) != 0) {
+					std::set<std::string> newOpenedValves = ss.openedValves;
+					newOpenedValves.insert(position);
+					std::multiset<std::string> newPositions = positions;
+					newPositions.insert(position);
+					SituationState2 nextState{newPositions, newOpenedValves};
+					insertIfMax2(newStateSpace, nextState, newReleasedPressure);
+				}
+				for (const std::string& neighbour : vs.getNeighbours(position)) {
+					std::multiset<std::string> newPositions = positions;
+					newPositions.insert(neighbour);
+					SituationState2 nextState{newPositions, ss.openedValves};
+					insertIfMax2(newStateSpace, nextState, newReleasedPressure);
+				}
+			}
+		}
+		stateSpace = std::move(newStateSpace);
+	}
+
+	int maxPressuse = 0;
+	for (const auto& [ign, pressureReleased] : stateSpace) {
+		if (pressureReleased > maxPressuse) {
+			maxPressuse = pressureReleased;
+		}
+	}
+
+	return maxPressuse;
+}
 int f2(std::istream& in) {
+	ValveSystem vs = readInValveSystem(in);
+	SituationState2 ss2{std::multiset<std::string>{startingValve, startingValve}, std::set<std::string>{}};
+	int res = mostPressureReleased2(vs, ss2, 26);
+
+	std::cout << res << "\n";
 
 	return 0;
 }
