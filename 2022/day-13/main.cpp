@@ -10,6 +10,7 @@ class PacketDataVisitor;
 
 class PacketData {
 public:
+	virtual ~PacketData() = default;
 	virtual void visit(PacketDataVisitor& visitor) const = 0;
 };
 
