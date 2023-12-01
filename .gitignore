@@ -2,6 +2,6 @@
 *.o
 *.bin
 *.swp
-/2021/build/
-/2022/build/
+**/build/
 **/CMakeUserPresets.json
+**/.vscode
