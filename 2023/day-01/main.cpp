@@ -76,7 +76,6 @@ int f2(std::istream& in) {
 			}
 		}
 
-		std::cout << i++ << " " << firstDigit << lastDigit << "\n";
 		sum += firstDigit * 10 + lastDigit;
 	}
 	std::cout << sum << "\n";
