@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -22,3 +22,4 @@ add_subdirectory(input_selector)
 
 add_subdirectory(day-01)
 add_subdirectory(day-02)
+add_subdirectory(day-03)
