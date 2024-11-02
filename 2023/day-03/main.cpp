@@ -1,7 +1,7 @@
 #include <string>
 #include <vector>
 #include <cctype>
-#include <print>
+#include <iostream>
 #include <ranges>
 #include <charconv>
 
@@ -56,7 +56,7 @@ int f1(std::istream& in) {
 		}
 	}
 
-	std::println("{}", sum);
+	std::cout << sum << "\n";
 
 	return 0;
 }
@@ -143,7 +143,7 @@ int f2(std::istream& in) {
 		sum += countAdjecentNumbers(lines, i, j);
 	}
 
-	std::println("{}", sum);
+	std::cout << sum << "\n";
 
 	return 0;
 }

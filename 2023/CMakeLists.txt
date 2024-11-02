@@ -13,7 +13,7 @@ message(STATUS "Found boost library ${Boost_VERSION_STRING}")
 
 function(add_new_day day)
 	add_executable(${day} main.cpp)
-	target_compile_options(${day} PRIVATE ${CXX_WARNING_FLAGS})
+	target_compile_options(${day} PRIVATE ${CXX_WARNING_FLAGS} "-fno-rtti")
 	target_link_libraries(${day} PRIVATE input_selector Boost::boost)
 	set_target_properties(${day} PROPERTIES OUTPUT_NAME main)
 endfunction()
