@@ -48,6 +48,9 @@ int f1(std::istream& in) {
 	return 0;
 }
 
+// Running this for input.txt takes a *very* long time, because the answer is 13663968099527.
+// It is the least common multiple of the numbers for which each starting positions encounter
+// a node with 'Z' as the last character the first time.
 int f2(std::istream& in) {
 	std::string stepSequence;
 	std::getline(in, stepSequence);

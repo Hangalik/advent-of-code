@@ -8,6 +8,8 @@ project(advent-of-code-2023 LANGUAGES C CXX)
 
 set(CXX_WARNING_FLAGS -Wall -Wextra -Wdeprecated -Wno-unused -pedantic)
 
+set(CMAKE_OPTIMIZE_DEPENDENCIES True)
+
 find_package(Boost REQUIRED)
 message(STATUS "Found boost library ${Boost_VERSION_STRING}")
 
