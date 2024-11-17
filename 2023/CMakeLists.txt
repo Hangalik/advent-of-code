@@ -8,8 +8,6 @@ project(advent-of-code-2023 LANGUAGES C CXX)
 
 set(CXX_WARNING_FLAGS -Wall -Wextra -Wdeprecated -Wno-unused -pedantic)
 
-set(CMAKE_OPTIMIZE_DEPENDENCIES True)
-
 find_package(Boost REQUIRED)
 message(STATUS "Found boost library ${Boost_VERSION_STRING}")
 
@@ -31,3 +29,4 @@ add_subdirectory(day-06)
 add_subdirectory(day-07)
 add_subdirectory(day-08)
 add_subdirectory(day-09)
+add_subdirectory(day-10)
