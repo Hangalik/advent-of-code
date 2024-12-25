@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <cstring>
 
 #include "input_selector.h"
 
@@ -68,28 +69,46 @@ struct RobotComparator {
 	}
 };
 
-void print(std::vector<Robot>& robots) {
-	std::ranges::sort(robots, RobotComparator{});
-	auto it = robots.begin();
-	std::string line(height * (width + 1), '.');
+void passTime(std::vector<Robot>& robots, std::string& line, int seconds) {
 	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
-			bool robot = std::ranges::binary_search(robots, Robot{i, j, 0, 0}, RobotComparator{});
-			if (robot) {
-				int idx = i * (width + 1) + j;
-				line[idx] = '#';
-			}
-		}
-		int idx = i * (width + 1) + width;
-		line[idx] = '\n';
+		size_t lineStart = i * (width + 1);
+		auto lineBegin = line.begin() + lineStart;
+		auto lineEnd = lineBegin + width;
+		std::fill(lineBegin, lineEnd, '.');
+		*lineEnd = '\n';
 	}
-	std::cout << line;
+	for (Robot& r : robots) {
+		r.px = (r.px + seconds * r.vx) % width;
+		r.py = (r.py + seconds * r.vy) % height;
+		if (r.px < 0) r.px += width;
+		if (r.py < 0) r.py += height;
+		int idx = r.py * (width + 1) + r.px;
+		line[idx] = '#';
+	}
 }
 
 int f2(std::istream& in) {
 	std::vector<Robot> robots = readRobots(in);
+	std::string robotStr(height * (width + 1), '.');
+	passTime(robots, robotStr, 0);
 
-	print(robots);
+	int idx = 0;
+	std::cout << idx << ":\n" << robotStr << "\n";
+
+	int timeToPass = 7055;
+	std::string line("");
+	while (std::getline(std::cin, line)) {
+		if (line == "q") break;
+		try {
+			timeToPass = std::stoi(line);
+			if (timeToPass <= 0) timeToPass = 1;
+		} catch (...) {
+			;
+		}
+		idx += timeToPass;
+		passTime(robots, robotStr, timeToPass);
+		std::cout << idx << ":\n" << robotStr << "\n";
+	}
 
 	return 0;
 }
