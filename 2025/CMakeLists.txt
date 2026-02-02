@@ -16,3 +16,5 @@ function(add_new_day day)
 endfunction()
 
 add_subdirectory(input_selector)
+
+add_subdirectory(day-01)
